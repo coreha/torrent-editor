@@ -6,7 +6,7 @@ import bencode
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-a', '--announce', nargs=1, help="Announce URL(s) to set in outfile. http://tracker1,http://tracker2,...")
-parser.add_argument('-p', '--private', action='store_const', const=1, default=0, help="Set private flag. Changes info_hash.")
+parser.add_argument('-p', '--private', nargs=1, type=int, help="Set private flag (1 ON, 0 OFF). Changes info_hash.")
 parser.add_argument('-c', '--created-by', nargs=1, help="Created by (string).")
 parser.add_argument('-co', '--comment', nargs=1, help="Comment.")
 parser.add_argument('-d', '--date', nargs=1, help="Creation date (unix timestamp).")
@@ -40,9 +40,10 @@ if args.really_strip:
 				'piece length': meta['info']['piece length']}
 			}
 
-if 'private' in meta['info'] and not args.private:
+if 'private' in meta['info'] and args.private == 0:
+	print "Clearing private flag. {}".format(args.private)
 	meta['info']['private'] = 0
-elif args.private:
+elif args.private == 1:
 	meta['info']['private'] = 1
 
 if args.announce:
