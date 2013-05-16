@@ -5,9 +5,10 @@ import bencode
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-a', '--announce', nargs=1, help="Announce URL to set in outfile.")
+parser.add_argument('-a', '--announce', nargs=1, help="Announce URL(s) to set in outfile. http://tracker1,http://tracker2,...")
 parser.add_argument('-p', '--private', action='store_const', const=1, default=0, help="Set private flag. Changes info_hash.")
 parser.add_argument('-c', '--created-by', nargs=1, help="Created by (string).")
+parser.add_argument('-co', '--comment', nargs=1, help="Comment.")
 parser.add_argument('-d', '--date', nargs=1, help="Creation date (unix timestamp).")
 
 parser.add_argument('-s', '--strip', action='store_const', const=True, default=False, help="Strip output file.")
@@ -45,9 +46,21 @@ elif args.private:
 	meta['info']['private'] = 1
 
 if args.announce:
-	meta['announce'] = args.announce
+	announce_list = args.announce[0].split(',')
+	# If multiple trackers, set the announce list dict	
+	if ( len(announce_list) > 1 ):
+		meta['announce-list'] = [announce_list]
+		if 'announce' in meta:
+			del meta['announce']
+	else:
+		meta['announce'] = announce_list[0]
+		if 'announce-list' in meta:
+			del meta['announce-list']
 
 if args.created_by:
 	meta['created by'] = args.created_by
+
+if args.comment:
+	meta['comment'] = args.comment
 
 args.dest.write( bencode.bencode(meta) )
